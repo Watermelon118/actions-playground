@@ -1,0 +1,19 @@
+name: 03 - Branch Filter
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+    branches-ignore:
+      - 'experimental/**'
+
+jobs:
+  show-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show what triggered me
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Triggered by: ${{ github.actor }}"
