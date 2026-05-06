@@ -1,0 +1,24 @@
+name: 05 - PR Check
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: What event triggered me?
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "PR title: ${{ github.event.pull_request.title }}"
+          echo "From branch: ${{ github.head_ref }}"
+          echo "To branch: ${{ github.base_ref }}"
+          echo "Current SHA being tested: ${{ github.sha }}"
+      
+      - name: Run tests
+        run: mvn test
