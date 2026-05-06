@@ -1,0 +1,18 @@
+name: 04 - Path Filter
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build-only-when-code-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: This only runs when src/ or pom.xml changes
+        run: echo "Real code changed, running CI..."
