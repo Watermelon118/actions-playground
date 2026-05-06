@@ -1,0 +1,32 @@
+name: 06 - Schedule and Manual
+
+on:
+  schedule:
+    - cron: '0 15 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Which environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      
+      run_tests:
+        description: 'Run tests before deploy?'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  scheduled-or-manual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show how I was triggered
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Environment input: ${{ inputs.environment }}"
+          echo "Run tests input: ${{ inputs.run_tests }}"
