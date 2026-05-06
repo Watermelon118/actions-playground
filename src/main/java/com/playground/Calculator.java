@@ -12,5 +12,8 @@ public class Calculator {
     public int multiply(int a, int b) {
         return a * b;  //返回a*b的值
     }
+    public int divide(int a, int b) {
+    return a / b;
+}
 }
 //为了commit让04-paths.yml跑起来
