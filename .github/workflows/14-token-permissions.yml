@@ -1,0 +1,23 @@
+name: 14 - GITHUB_TOKEN
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  show-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show token info
+        run: |
+          echo "Token length: ${#TOKEN}"
+          echo "Token starts with: ${TOKEN:0:4}..."
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Use token to call GitHub API
+        run: |
+          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               https://api.github.com/repos/${{ github.repository }}
