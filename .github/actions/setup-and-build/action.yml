@@ -1,0 +1,45 @@
+name: Setup and Build
+description: Checkout code, setup Java, and build the project
+inputs:
+  java-version:
+    description: 'Java version to use'
+    required: false
+    default: '17'
+  
+  skip-tests:
+    description: 'Skip running tests during build'
+    required: false
+    default: 'false'
+
+outputs:
+  jar-path:
+    description: 'Path to the built jar'
+    value: ${{ steps.find-jar.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: 'temurin'
+        cache: 'maven'
+    
+    - name: Build
+      shell: bash
+      run: |
+        if [ "${{ inputs.skip-tests }}" = "true" ]; then
+          mvn package -DskipTests
+        else
+          mvn package
+        fi
+    
+    - name: Find built jar
+      id: find-jar
+      shell: bash
+      run: |
+        JAR=$(ls target/*.jar | head -1)
+        echo "path=$JAR" >> $GITHUB_OUTPUT
+        echo "Found jar: $JAR"
