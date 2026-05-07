@@ -1,0 +1,29 @@
+name: 09 - Job Outputs
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+      build_time: ${{ steps.set-version.outputs.build_time }}
+    
+    steps:
+      - name: Generate version
+        id: set-version
+        run: |
+          VERSION="v1.0.$(date +%s)"
+          BUILD_TIME=$(date)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Use the version from build
+        run: |
+          echo "Deploying version: ${{ needs.build.outputs.version }}"
+          echo "Built at: ${{ needs.build.outputs.build_time }}"
