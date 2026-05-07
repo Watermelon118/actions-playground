@@ -1,0 +1,32 @@
+name: 13 - Environments
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Which environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env }}
+    
+    steps:
+      - name: Show which environment I'm in
+        run: |
+          echo "Deploying to: ${{ inputs.target_env }}"
+          echo "Deploy key length: ${#DEPLOY_KEY}"
+          echo "Deploy key starts with: ${DEPLOY_KEY:0:7}***"
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+      
+      - name: Pretend to deploy
+        run: |
+          echo "Connecting to ${{ inputs.target_env }} server..."
+          sleep 3
+          echo "Deployment to ${{ inputs.target_env }} complete!"
