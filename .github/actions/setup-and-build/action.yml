@@ -1,5 +1,5 @@
 name: Setup and Build
-description: Checkout code, setup Java, and build the project
+description: Setup Java and build the project (caller must checkout first)
 inputs:
   java-version:
     description: 'Java version to use'
@@ -19,8 +19,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v4
-    
     - uses: actions/setup-java@v4
       with:
         java-version: ${{ inputs.java-version }}
