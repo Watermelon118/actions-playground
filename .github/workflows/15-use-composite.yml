@@ -1,0 +1,19 @@
+name: 15 - Use Composite Action
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build the project (skipping tests)
+        id: build
+        uses: ./.github/actions/setup-and-build
+        with:
+          java-version: '17'
+          skip-tests: 'true'
+      
+      - name: Show output from action
+        run: |
+          echo "Built jar location: ${{ steps.build.outputs.jar-path }}"
+          ls -lh ${{ steps.build.outputs.jar-path }}
