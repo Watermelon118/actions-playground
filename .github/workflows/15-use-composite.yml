@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Build the project (skipping tests)
         id: build
-        uses: ./.github/actions/setup-and-build
+        uses: ./.github/actions/setup-and-build/actions.yml
         with:
           java-version: '17'
           skip-tests: 'true'
