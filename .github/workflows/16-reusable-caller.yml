@@ -1,0 +1,67 @@
+# ============================================================
+# 这个 workflow 演示如何调用一个 reusable workflow
+# 它会按顺序部署到 staging,然后部署到 production
+# ============================================================
+
+name: 16 - Reusable Caller
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy'
+        required: false
+        default: 'v1.0.0'
+        type: string
+
+jobs:
+  # ============================================================
+  # job 1: 部署到 staging
+  # ============================================================
+  deploy-staging:
+    # 这里!!! 不是 runs-on + steps 这种结构
+    # 而是直接 uses: 调用一个 reusable workflow
+    uses: ./.github/workflows/_reusable-deploy.yml
+    # ./ 开头表示本仓库
+    # 后面是 reusable workflow 的文件路径
+    
+    with:
+      # 跟 composite action 一样,通过 with 传 inputs
+      target_env: staging
+      version: ${{ inputs.version }}
+    
+    secrets:
+      # 必须显式传 secrets!
+      # 不像 composite action 自动继承
+      DEPLOY_KEY: ${{ secrets.MY_SECRET_PASSWORD }}
+      # 把仓库级的 secret 传给 reusable workflow 的 DEPLOY_KEY
+  
+  # ============================================================
+  # job 2: 部署到 production(等 staging 成功后)
+  # ============================================================
+  deploy-production:
+    needs: deploy-staging
+    # 等 staging job 成功才跑
+    
+    uses: ./.github/workflows/_reusable-deploy.yml
+    # 调用同一个 reusable workflow,实现"代码复用"
+    
+    with:
+      target_env: production
+      version: ${{ inputs.version }}
+    
+    secrets:
+      DEPLOY_KEY: ${{ secrets.MY_SECRET_PASSWORD }}
+  
+  # ============================================================
+  # job 3: 显示部署结果(读取 reusable workflow 的 output)
+  # ============================================================
+  notify:
+    needs: [deploy-staging, deploy-production]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show URLs
+        run: |
+          echo "Staging deployed to: ${{ needs.deploy-staging.outputs.deployment_url }}"
+          echo "Production deployed to: ${{ needs.deploy-production.outputs.deployment_url }}"
+          # 注意路径:needs.<调用 job 的 id>.outputs.<reusable workflow 的 outputs key>
