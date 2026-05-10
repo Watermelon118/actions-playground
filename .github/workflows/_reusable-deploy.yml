@@ -1,0 +1,84 @@
+# ============================================================
+# 这是一个 reusable workflow
+# 关键特征:on 块下用 workflow_call(而不是 push/pull_request 等)
+# 这样它不会被 push/PR 触发,只能被别的 workflow "调用"
+# ============================================================
+
+name: Reusable Deploy
+# workflow 的显示名
+
+on:
+  workflow_call:
+    # 关键!这个 trigger 让 workflow 变成 "可被调用的"
+    # 没有 workflow_call,这就是个普通 workflow
+    
+    inputs:
+      # 调用方传给我的参数,跟 composite action 的 inputs 类似
+      # 但!! reusable workflow 的 inputs 必须指定 type
+      
+      target_env:
+        description: 'Which environment to deploy to'
+        required: true
+        type: string
+        # type 必填!可以是 string / boolean / number / choice
+        # composite action 没这个限制(都是字符串)
+      
+      version:
+        description: 'Version to deploy'
+        required: false
+        type: string
+        default: 'latest'
+    
+    secrets:
+      # 调用方传给我的 secrets
+      # 注意!! 这个不是自动继承的,必须显式声明
+      # 跟 composite action 不一样(composite 自动继承所有 secrets)
+      
+      DEPLOY_KEY:
+        description: 'SSH key for deploy'
+        required: true
+    
+    outputs:
+      # 这个 reusable workflow 完成后,把哪些值返回给调用方
+      
+      deployment_url:
+        description: 'URL of the deployment'
+        value: ${{ jobs.deploy.outputs.url }}
+        # 注意路径:jobs.<job_id>.outputs.<key>
+        # 跟 composite action 不同(composite 用 steps.X.outputs)
+        # 因为 reusable workflow 内部是 jobs 不是 steps
+
+jobs:
+  # 下面就跟普通 workflow 一模一样,可以有多个 job
+  
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env }}
+    # 关键!根据传进来的参数动态绑定 environment
+    # 调用方传 'staging' 就绑 staging,传 'production' 就绑 production
+    
+    outputs:
+      # 这里是 job 级 outputs(阶段4学过的)
+      url: ${{ steps.deploy-step.outputs.url }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Show what we're doing
+        run: |
+          echo "Deploying version: ${{ inputs.version }}"
+          echo "Target environment: ${{ inputs.target_env }}"
+          echo "Secret length: ${#KEY}"
+        env:
+          KEY: ${{ secrets.DEPLOY_KEY }}
+          # 这里用的 secrets.DEPLOY_KEY 来自 inputs.secrets 声明的那个
+          # 不是自动从仓库 secrets 取的
+      
+      - name: Pretend to deploy
+        id: deploy-step
+        run: |
+          echo "Connecting to ${{ inputs.target_env }} server..."
+          sleep 2
+          DEPLOY_URL="https://${{ inputs.target_env }}.example.com"
+          echo "url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Deployment complete: $DEPLOY_URL"
