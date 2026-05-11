@@ -1,10 +1,10 @@
 name: 03 - Branch Filter
 
 on:
-  push:
-    branches:
-      - main
-      - 'release/**'
+   workflow_dispatch:        #push:
+    #branches:
+      #- main
+      #- 'release/**'
 
 jobs:
   show-info:
