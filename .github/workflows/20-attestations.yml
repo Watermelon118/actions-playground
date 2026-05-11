@@ -1,0 +1,39 @@
+name: 20 - Artifact Attestations
+
+on: workflow_dispatch
+
+permissions:
+  id-token: write       # 需要 OIDC 来签名 attestation
+  contents: read        # checkout 代码
+  attestations: write   # 关键!写 attestation 必需
+
+jobs:
+  build-and-attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build jar
+        run: mvn package -DskipTests
+
+      - name: Show jar info
+        run: |
+          ls -lh target/*.jar
+          sha256sum target/*.jar
+
+      - name: Generate attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'target/*.jar'
+
+      - name: Upload jar as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-jar
+          path: target/*.jar
