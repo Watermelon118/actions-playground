@@ -1,0 +1,20 @@
+name: 22 - Injection Safe
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_name:
+        description: 'Your name'
+        required: true
+        default: 'World'
+        type: string
+
+jobs:
+  safe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet user (SAFE)
+        env:
+          USER_NAME: ${{ inputs.user_name }}
+        run: |
+          echo "Hello $USER_NAME!"
